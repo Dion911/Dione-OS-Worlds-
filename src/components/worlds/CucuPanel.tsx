@@ -158,7 +158,9 @@ export default function CucuPanel() {
     });
   };
 
-  const overallProgress = Math.round(state.foundations.reduce((acc, f) => acc + f.progress, 0) / state.foundations.length);
+  const overallProgress = state.foundations.length > 0 
+    ? Math.round(state.foundations.reduce((acc: number, f: Foundation) => acc + f.progress, 0) / state.foundations.length)
+    : 0;
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -436,16 +438,21 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
     setState((prev: any) => ({ ...prev, profile: { ...prev.profile, [field]: value } }));
   };
 
+  const addFoundationCategory = () => {
+    setState((prev: any) => ({
+      ...prev,
+      foundations: [...(prev.foundations || []), { id: Date.now().toString(), title: 'New Category', status: 'Not Started', progress: 0, items: [] }]
+    }));
+  };
+
   const addFoundationItem = (foundationId: string) => {
-    const text = prompt('Enter task text:');
-    if (!text) return;
     setState((prev: any) => {
       const newFoundations = prev.foundations.map((f: any) => {
         if (f.id === foundationId) {
-          const newItem = { id: Date.now().toString(), text, completed: false };
+          const newItem = { id: Date.now().toString(), text: '', completed: false };
           const newItems = [...f.items, newItem];
           const completedCount = newItems.filter(i => i.completed).length;
-          const progress = Math.round((completedCount / newItems.length) * 100);
+          const progress = newItems.length > 0 ? Math.round((completedCount / newItems.length) * 100) : 0;
           return { ...f, items: newItems, progress };
         }
         return f;
@@ -469,25 +476,31 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
     });
   };
 
-  const addService = () => {
-    const title = prompt('Service Title:');
-    if (!title) return;
-    const price = prompt('Price:');
-    const description = prompt('Description:');
+  const addTimelineEvent = () => {
     setState((prev: any) => ({
       ...prev,
-      services: [...(prev.services || []), { id: Date.now().toString(), title, price, description }]
+      timeline: [...(prev.timeline || []), { id: Date.now().toString(), title: '', date: '', status: 'future' }]
+    }));
+  };
+
+  const addRoadmapItem = () => {
+    setState((prev: any) => ({
+      ...prev,
+      roadmap: [...(prev.roadmap || []), { id: Date.now().toString(), period: '', title: '', description: '' }]
+    }));
+  };
+
+  const addService = () => {
+    setState((prev: any) => ({
+      ...prev,
+      services: [...(prev.services || []), { id: Date.now().toString(), title: '', price: '', description: '' }]
     }));
   };
 
   const addGap = () => {
-    const title = prompt('Gap Title:');
-    if (!title) return;
-    const description = prompt('Description:');
-    const type = prompt('Type (warn, gold, cucu):', 'gold') as any;
     setState((prev: any) => ({
       ...prev,
-      gaps: [...(prev.gaps || []), { id: Date.now().toString(), type: type || 'gold', title, description }]
+      gaps: [...(prev.gaps || []), { id: Date.now().toString(), type: 'gold', title: '', description: '' }]
     }));
   };
 
@@ -547,26 +560,70 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
 
         {activeTab === 'foundations' && (
           <div className="space-y-6">
-            {state.foundations.map((f: Foundation) => (
-              <div key={f.id} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <h4 className="text-[14px] font-bold uppercase tracking-wider text-cucu">{f.title}</h4>
-                  <button onClick={() => addFoundationItem(f.id)} className="text-cucu hover:text-cucu-2">
-                    <Plus size={14} />
-                  </button>
+            <button 
+              onClick={addFoundationCategory}
+              className="w-full py-2 border-2 border-dashed border-paper-3 text-ink-3 text-[13px] uppercase tracking-widest font-bold hover:border-cucu hover:text-cucu transition-all rounded-lg"
+            >
+              + Add Category
+            </button>
+            {state.foundations.map((f: Foundation, fIdx: number) => (
+              <div key={f.id} className="space-y-2 p-3 bg-white rounded-lg border border-paper-3 relative group/cat">
+                <button 
+                  onClick={() => {
+                    setState((prev: any) => ({
+                      ...prev,
+                      foundations: prev.foundations.filter((cat: any) => cat.id !== f.id)
+                    }));
+                  }}
+                  className="absolute top-3 right-3 text-ink-3 hover:text-red-500 opacity-0 group-hover/cat:opacity-100 transition-opacity"
+                >
+                  <Trash2 size={14} />
+                </button>
+                <div className="flex justify-between items-center pr-8">
+                  <input 
+                    value={f.title}
+                    onChange={e => {
+                      setState((prev: any) => {
+                        const newFoundations = [...prev.foundations];
+                        newFoundations[fIdx] = { ...newFoundations[fIdx], title: e.target.value };
+                        return { ...prev, foundations: newFoundations };
+                      });
+                    }}
+                    placeholder="Category Title"
+                    className="text-[14px] font-bold uppercase tracking-wider text-cucu bg-transparent outline-none border-b border-transparent focus:border-cucu-3 w-full"
+                  />
                 </div>
-                <div className="space-y-1">
-                  {f.items.map(item => (
-                    <div key={item.id} className="flex items-center justify-between p-2 bg-white rounded-lg border border-paper-3 group">
-                      <span className="text-[14px] text-ink">{item.text}</span>
+                <div className="space-y-1 mt-2">
+                  {f.items.map((item, iIdx) => (
+                    <div key={item.id} className="flex items-center gap-2 group">
+                      <input 
+                        value={item.text}
+                        onChange={e => {
+                          setState((prev: any) => {
+                            const newFoundations = [...prev.foundations];
+                            const newItems = [...newFoundations[fIdx].items];
+                            newItems[iIdx] = { ...newItems[iIdx], text: e.target.value };
+                            newFoundations[fIdx] = { ...newFoundations[fIdx], items: newItems };
+                            return { ...prev, foundations: newFoundations };
+                          });
+                        }}
+                        placeholder="Task description"
+                        className="flex-1 text-[14px] text-ink bg-paper-2 border border-paper-3 px-2 py-1 rounded outline-none focus:border-cucu"
+                      />
                       <button 
                         onClick={() => removeFoundationItem(f.id, item.id)}
-                        className="text-ink-3 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="text-ink-3 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   ))}
+                  <button 
+                    onClick={() => addFoundationItem(f.id)} 
+                    className="text-[12px] text-ink-3 hover:text-cucu flex items-center gap-1 mt-2 py-1"
+                  >
+                    <Plus size={12} /> Add Task
+                  </button>
                 </div>
               </div>
             ))}
@@ -575,9 +632,26 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
 
         {activeTab === 'timeline' && (
           <div className="space-y-4">
+            <button 
+              onClick={addTimelineEvent}
+              className="w-full py-2 border-2 border-dashed border-paper-3 text-ink-3 text-[13px] uppercase tracking-widest font-bold hover:border-cucu hover:text-cucu transition-all rounded-lg"
+            >
+              + Add Timeline Event
+            </button>
             {state.timeline.map((event: TimelineEvent, idx: number) => (
-              <div key={event.id} className="p-3 bg-white rounded-lg border border-paper-3 space-y-2">
-                <div className="flex gap-2">
+              <div key={event.id} className="p-3 bg-white rounded-lg border border-paper-3 space-y-2 relative group">
+                <button 
+                  onClick={() => {
+                    setState((prev: any) => ({
+                      ...prev,
+                      timeline: prev.timeline.filter((t: any) => t.id !== event.id)
+                    }));
+                  }}
+                  className="absolute top-2 right-2 text-ink-3 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 size={12} />
+                </button>
+                <div className="flex gap-2 pr-6">
                   <input 
                     value={event.title}
                     onChange={e => {
@@ -587,6 +661,7 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
                         return { ...prev, timeline: newTimeline };
                       });
                     }}
+                    placeholder="Event Title"
                     className="flex-1 bg-paper-2 border border-paper-3 px-2 py-1 text-[14px] rounded"
                   />
                   <input 
@@ -598,7 +673,8 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
                         return { ...prev, timeline: newTimeline };
                       });
                     }}
-                    className="w-20 bg-paper-2 border border-paper-3 px-2 py-1 text-[14px] rounded"
+                    placeholder="Date/Time"
+                    className="w-24 bg-paper-2 border border-paper-3 px-2 py-1 text-[14px] rounded"
                   />
                 </div>
                 <select 
@@ -623,9 +699,26 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
 
         {activeTab === 'roadmap' && (
           <div className="space-y-4">
+            <button 
+              onClick={addRoadmapItem}
+              className="w-full py-2 border-2 border-dashed border-paper-3 text-ink-3 text-[13px] uppercase tracking-widest font-bold hover:border-cucu hover:text-cucu transition-all rounded-lg"
+            >
+              + Add Roadmap Item
+            </button>
             {state.roadmap.map((item: RoadmapItem, idx: number) => (
-              <div key={item.id} className="p-3 bg-white rounded-lg border border-paper-3 space-y-2">
-                <div className="flex gap-2">
+              <div key={item.id} className="p-3 bg-white rounded-lg border border-paper-3 space-y-2 relative group">
+                <button 
+                  onClick={() => {
+                    setState((prev: any) => ({
+                      ...prev,
+                      roadmap: prev.roadmap.filter((r: any) => r.id !== item.id)
+                    }));
+                  }}
+                  className="absolute top-2 right-2 text-ink-3 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 size={12} />
+                </button>
+                <div className="flex gap-2 pr-6">
                   <input 
                     value={item.period}
                     onChange={e => {
@@ -635,7 +728,8 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
                         return { ...prev, roadmap: newRoadmap };
                       });
                     }}
-                    className="w-20 bg-paper-2 border border-paper-3 px-2 py-1 text-[14px] rounded"
+                    placeholder="Period (e.g. Q3)"
+                    className="w-24 bg-paper-2 border border-paper-3 px-2 py-1 text-[14px] rounded"
                   />
                   <input 
                     value={item.title}
@@ -646,6 +740,7 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
                         return { ...prev, roadmap: newRoadmap };
                       });
                     }}
+                    placeholder="Title"
                     className="flex-1 bg-paper-2 border border-paper-3 px-2 py-1 text-[14px] rounded"
                   />
                 </div>
@@ -658,6 +753,7 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
                       return { ...prev, roadmap: newRoadmap };
                     });
                   }}
+                  placeholder="Description"
                   rows={2}
                   className="w-full bg-paper-2 border border-paper-3 px-2 py-1 text-[13px] rounded resize-none"
                 />
@@ -687,7 +783,7 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
                 >
                   <Trash2 size={12} />
                 </button>
-                <div className="flex gap-2">
+                <div className="flex gap-2 pr-6">
                   <input 
                     value={service.title}
                     onChange={e => {
@@ -752,7 +848,7 @@ function CucuEditor({ state, setState, setIsEditing }: { state: any, setState: a
                 >
                   <Trash2 size={12} />
                 </button>
-                <div className="flex gap-2">
+                <div className="flex gap-2 pr-6">
                   <select 
                     value={gap.type}
                     onChange={e => {
