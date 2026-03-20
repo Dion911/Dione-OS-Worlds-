@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "FocusItem": {
+      "title": "Focus Item",
+      "description": "A single focus task",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number" },
+        "text": { "type": "string" },
+        "color": { "type": "string" },
+        "done": { "type": "boolean" }
+      },
+      "required": ["id", "text", "color", "done"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user's dashboard state",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "focusItems": {
+          "type": "array",
+          "items": { "$ref": "#/entities/FocusItem" }
+        },
+        "logs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["uid", "focusItems", "logs"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User's personal dashboard data"
+    }
+  }
+}

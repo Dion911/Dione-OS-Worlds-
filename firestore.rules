@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required, immutable) - User's ID
+    //   - focusItems: list of objects (required) - User's focus tasks
+    //   - logs: list of strings (required) - User's quick capture logs
+    //
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == request.auth.uid;
+    }
+    
+    function uidNotModified() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == resource.data.uid;
+    }
+    
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    function isValidFocusItem(item) {
+      return item is map &&
+             item.keys().hasAll(['id', 'text', 'color', 'done']) &&
+             item.id is number &&
+             item.text is string && item.text.size() <= 200 &&
+             item.color is string && item.color.size() <= 50 &&
+             item.done is bool;
+    }
+    
+    function isValidFocusItemsList(items) {
+      // Since we can't easily iterate in rules, we just check size and type.
+      // A more complex rule could check each item if needed, but size limit prevents abuse.
+      return items is list && items.size() <= 20;
+    }
+    
+    function isValidLogsList(logs) {
+      return logs is list && logs.size() <= 50;
+    }
+    
+    function isValidUserProfile(data) {
+      return hasRequiredFields(['uid', 'focusItems', 'logs']) &&
+             data.uid is string && data.uid.size() > 0 && data.uid.size() < 128 &&
+             isValidFocusItemsList(data.focusItems) &&
+             isValidLogsList(data.logs);
+    }
+    
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data) && uidUnchanged();
+      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data) && uidNotModified();
+      allow delete: if isOwner(userId);
+    }
+  }
+}
