@@ -191,6 +191,30 @@ function CucuDashboard({ state, overallProgress, toggleItem, setState }: { state
   const [addingTo, setAddingTo] = useState<string | null>(null);
   const [newItemText, setNewItemText] = useState('');
 
+  const [addingGap, setAddingGap] = useState(false);
+  const [newGap, setNewGap] = useState({ type: 'gold', title: '', description: '' });
+
+  const [addingRoadmap, setAddingRoadmap] = useState(false);
+  const [newRoadmap, setNewRoadmap] = useState({ period: '', title: '', description: '' });
+
+  const [addingTimeline, setAddingTimeline] = useState(false);
+  const [newTimeline, setNewTimeline] = useState({ title: '', date: '', status: 'future' });
+
+  const [addingService, setAddingService] = useState(false);
+  const [newService, setNewService] = useState({ title: '', price: '', description: '' });
+
+  const [editingTimelineId, setEditingTimelineId] = useState<string | null>(null);
+  const [editTimeline, setEditTimeline] = useState({ title: '', date: '', status: 'future' });
+
+  const [editingGapId, setEditingGapId] = useState<string | null>(null);
+  const [editGap, setEditGap] = useState({ type: 'gold', title: '', description: '' });
+
+  const [editingRoadmapId, setEditingRoadmapId] = useState<string | null>(null);
+  const [editRoadmap, setEditRoadmap] = useState({ period: '', title: '', description: '' });
+
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [editService, setEditService] = useState({ title: '', price: '', description: '' });
+
   const handleAddItem = (foundationId: string) => {
     if (!newItemText.trim()) {
       setAddingTo(null);
@@ -216,6 +240,106 @@ function CucuDashboard({ state, overallProgress, toggleItem, setState }: { state
     
     setNewItemText('');
     setAddingTo(null);
+  };
+
+  const handleAddGap = () => {
+    if (!newGap.title.trim()) {
+      setAddingGap(false);
+      return;
+    }
+    setState((prev: any) => ({
+      ...prev,
+      gaps: [...(prev.gaps || []), { id: Date.now().toString(), ...newGap }]
+    }));
+    setNewGap({ type: 'gold', title: '', description: '' });
+    setAddingGap(false);
+  };
+
+  const handleAddRoadmap = () => {
+    if (!newRoadmap.title.trim()) {
+      setAddingRoadmap(false);
+      return;
+    }
+    setState((prev: any) => ({
+      ...prev,
+      roadmap: [...(prev.roadmap || []), { id: Date.now().toString(), ...newRoadmap }]
+    }));
+    setNewRoadmap({ period: '', title: '', description: '' });
+    setAddingRoadmap(false);
+  };
+
+  const handleAddTimeline = () => {
+    if (!newTimeline.title.trim()) {
+      setAddingTimeline(false);
+      return;
+    }
+    setState((prev: any) => ({
+      ...prev,
+      timeline: [...(prev.timeline || []), { id: Date.now().toString(), ...newTimeline }]
+    }));
+    setNewTimeline({ title: '', date: '', status: 'future' });
+    setAddingTimeline(false);
+  };
+
+  const handleAddService = () => {
+    if (!newService.title.trim()) {
+      setAddingService(false);
+      return;
+    }
+    setState((prev: any) => ({
+      ...prev,
+      services: [...(prev.services || []), { id: Date.now().toString(), ...newService }]
+    }));
+    setNewService({ title: '', price: '', description: '' });
+    setAddingService(false);
+  };
+
+  const handleDeleteTimeline = (id: string) => {
+    setState((prev: any) => ({ ...prev, timeline: prev.timeline.filter((t: any) => t.id !== id) }));
+  };
+
+  const handleDeleteGap = (id: string) => {
+    setState((prev: any) => ({ ...prev, gaps: prev.gaps.filter((g: any) => g.id !== id) }));
+  };
+
+  const handleDeleteRoadmap = (id: string) => {
+    setState((prev: any) => ({ ...prev, roadmap: prev.roadmap.filter((r: any) => r.id !== id) }));
+  };
+
+  const handleDeleteService = (id: string) => {
+    setState((prev: any) => ({ ...prev, services: prev.services.filter((s: any) => s.id !== id) }));
+  };
+
+  const handleSaveTimeline = (id: string) => {
+    setState((prev: any) => ({
+      ...prev,
+      timeline: prev.timeline.map((t: any) => t.id === id ? { ...t, ...editTimeline } : t)
+    }));
+    setEditingTimelineId(null);
+  };
+
+  const handleSaveGap = (id: string) => {
+    setState((prev: any) => ({
+      ...prev,
+      gaps: prev.gaps.map((g: any) => g.id === id ? { ...g, ...editGap } : g)
+    }));
+    setEditingGapId(null);
+  };
+
+  const handleSaveRoadmap = (id: string) => {
+    setState((prev: any) => ({
+      ...prev,
+      roadmap: prev.roadmap.map((r: any) => r.id === id ? { ...r, ...editRoadmap } : r)
+    }));
+    setEditingRoadmapId(null);
+  };
+
+  const handleSaveService = (id: string) => {
+    setState((prev: any) => ({
+      ...prev,
+      services: prev.services.map((s: any) => s.id === id ? { ...s, ...editService } : s)
+    }));
+    setEditingServiceId(null);
   };
 
   const removeFoundationItem = (foundationId: string, itemId: string, e: React.MouseEvent) => {
@@ -355,75 +479,291 @@ function CucuDashboard({ state, overallProgress, toggleItem, setState }: { state
 
       {/* LAUNCH ARC */}
       <section>
-        <h2 className="text-[11px] tracking-[0.2em] uppercase text-ink-3 mb-6 font-sans">Launch Arc</h2>
-        <div className="relative px-2">
-          <div className="absolute top-[5px] left-0 right-0 h-[1px] bg-paper-3"></div>
-          <div className="flex justify-between relative z-10">
-            {state.timeline.map((event: TimelineEvent) => (
-              <div key={event.id} className="flex flex-col items-center text-center max-w-[80px]">
-                <div className={`w-[11px] h-[11px] rounded-full mb-3 transition-all ${
-                  event.status === 'past' ? 'bg-cucu' : 
-                  event.status === 'current' ? 'bg-gold ring-4 ring-paper ring-offset-0' : 
-                  'bg-paper border border-paper-3'
-                }`}></div>
-                <div className="font-serif text-[14px] text-ink leading-tight mb-1">{event.title}</div>
-                <div className="font-sans text-[10px] uppercase tracking-wider text-ink-3">{event.date}</div>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-[11px] tracking-[0.2em] uppercase text-ink-3 font-sans">Launch Arc</h2>
+          <button onClick={() => setAddingTimeline(!addingTimeline)} className="text-ink-3 hover:text-cucu transition-colors p-1">
+            <Plus size={14} className={`transition-transform ${addingTimeline ? "rotate-45" : ""}`} />
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {addingTimeline && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-8 overflow-hidden">
+              <div className="bg-paper-2 p-3 rounded-md border border-paper-3 space-y-2">
+                <div className="flex gap-2">
+                  <select value={newTimeline.status} onChange={e => setNewTimeline({...newTimeline, status: e.target.value as any})} className="bg-paper border border-paper-3 rounded px-2 py-1.5 font-sans text-[12px] outline-none focus:border-cucu">
+                    <option value="past">Completed</option>
+                    <option value="current">Active</option>
+                    <option value="future">Upcoming</option>
+                  </select>
+                  <input autoFocus value={newTimeline.title} onChange={e => setNewTimeline({...newTimeline, title: e.target.value})} placeholder="Event Title" className="flex-1 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                  <input value={newTimeline.date} onChange={e => setNewTimeline({...newTimeline, date: e.target.value})} placeholder="Date (e.g. Q3 2026)" className="w-32 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                </div>
+                <div className="flex justify-end">
+                  <button onClick={handleAddTimeline} className="bg-cucu text-white px-4 py-1.5 rounded font-sans text-[11px] uppercase tracking-wider font-medium">Add Event</button>
+                </div>
               </div>
-            ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="relative px-2 mt-8 overflow-x-auto pb-4 scrollbar-hide">
+          <div className="min-w-full relative">
+            <div className="absolute top-[5px] left-0 right-0 h-[1px] bg-paper-3"></div>
+            <div className="flex justify-between relative z-10 gap-8 min-w-max">
+              {state.timeline.map((event: TimelineEvent) => (
+                editingTimelineId === event.id ? (
+                  <div key={event.id} className="flex flex-col items-center w-32 shrink-0 bg-paper-2 p-2 rounded-md border border-paper-3 z-20">
+                    <select value={editTimeline.status} onChange={e => setEditTimeline({...editTimeline, status: e.target.value as any})} className="w-full mb-1 bg-paper border border-paper-3 rounded px-1 py-1 font-sans text-[10px] outline-none focus:border-cucu">
+                      <option value="past">Completed</option>
+                      <option value="current">Active</option>
+                      <option value="future">Upcoming</option>
+                    </select>
+                    <input autoFocus value={editTimeline.title} onChange={e => setEditTimeline({...editTimeline, title: e.target.value})} placeholder="Title" className="w-full mb-1 bg-paper border border-paper-3 rounded px-1 py-1 font-sans text-[11px] outline-none focus:border-cucu text-center" />
+                    <input value={editTimeline.date} onChange={e => setEditTimeline({...editTimeline, date: e.target.value})} placeholder="Date" className="w-full mb-2 bg-paper border border-paper-3 rounded px-1 py-1 font-sans text-[10px] outline-none focus:border-cucu text-center" />
+                    <div className="flex gap-1 w-full">
+                      <button onClick={() => setEditingTimelineId(null)} className="flex-1 bg-paper-3 text-ink-2 py-1 rounded font-sans text-[10px] uppercase font-medium">Cancel</button>
+                      <button onClick={() => handleSaveTimeline(event.id)} className="flex-1 bg-cucu text-white py-1 rounded font-sans text-[10px] uppercase font-medium">Save</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    key={event.id} 
+                    className="flex flex-col items-center text-center w-24 shrink-0 group relative cursor-pointer"
+                    onClick={() => {
+                      setEditTimeline({ title: event.title, date: event.date, status: event.status });
+                      setEditingTimelineId(event.id);
+                    }}
+                  >
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteTimeline(event.id); }}
+                      className="absolute -top-6 text-ink-3 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                    <div className={`w-[11px] h-[11px] rounded-full mb-4 transition-all ${
+                      event.status === 'past' ? 'bg-cucu' : 
+                      event.status === 'current' ? 'bg-gold ring-4 ring-paper ring-offset-0' : 
+                      'bg-paper border border-paper-3'
+                    }`}></div>
+                    <div className="font-serif text-[15px] text-ink leading-tight mb-1 group-hover:text-cucu transition-colors">{event.title}</div>
+                    <div className="font-sans text-[10px] uppercase tracking-wider text-ink-3">{event.date}</div>
+                  </div>
+                )
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* GAP ANALYSIS */}
       <section>
-        <h2 className="text-[11px] tracking-[0.2em] uppercase text-ink-3 mb-4 font-sans">Gap Analysis</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-[11px] tracking-[0.2em] uppercase text-ink-3 font-sans">Gap Analysis</h2>
+          <button onClick={() => setAddingGap(!addingGap)} className="text-ink-3 hover:text-cucu transition-colors p-1">
+            <Plus size={14} className={`transition-transform ${addingGap ? "rotate-45" : ""}`} />
+          </button>
+        </div>
+        
+        <AnimatePresence>
+          {addingGap && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-4 overflow-hidden">
+              <div className="bg-paper-2 p-3 rounded-md border border-paper-3 space-y-2">
+                <div className="flex gap-2">
+                  <select value={newGap.type} onChange={e => setNewGap({...newGap, type: e.target.value as any})} className="bg-paper border border-paper-3 rounded px-2 py-1.5 font-sans text-[12px] outline-none focus:border-cucu">
+                    <option value="warn">Warning</option>
+                    <option value="gold">Insight</option>
+                    <option value="cucu">Success</option>
+                  </select>
+                  <input autoFocus value={newGap.title} onChange={e => setNewGap({...newGap, title: e.target.value})} placeholder="Gap Title" className="flex-1 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                </div>
+                <textarea value={newGap.description} onChange={e => setNewGap({...newGap, description: e.target.value})} placeholder="Description" rows={2} className="w-full bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu resize-none" />
+                <div className="flex justify-end">
+                  <button onClick={handleAddGap} className="bg-cucu text-white px-4 py-1.5 rounded font-sans text-[11px] uppercase tracking-wider font-medium">Add Gap</button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="space-y-0.5">
           {state.gaps.map((gap: GapItem) => (
-            <div key={gap.id} className="flex gap-4 items-start py-4 border-b border-paper-3 last:border-none">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[14px] shrink-0 mt-0.5 ${
-                gap.type === 'warn' ? 'bg-warn text-white' : 
-                gap.type === 'gold' ? 'bg-gold text-white' : 
-                'bg-cucu text-white'
-              }`}>
-                {gap.type === 'warn' ? '!' : gap.type === 'gold' ? '~' : '✓'}
+            editingGapId === gap.id ? (
+              <div key={gap.id} className="bg-paper-2 p-3 rounded-md border border-paper-3 space-y-2 mb-2">
+                <div className="flex gap-2">
+                  <select value={editGap.type} onChange={e => setEditGap({...editGap, type: e.target.value as any})} className="bg-paper border border-paper-3 rounded px-2 py-1.5 font-sans text-[12px] outline-none focus:border-cucu">
+                    <option value="warn">Warning</option>
+                    <option value="gold">Insight</option>
+                    <option value="cucu">Success</option>
+                  </select>
+                  <input autoFocus value={editGap.title} onChange={e => setEditGap({...editGap, title: e.target.value})} placeholder="Gap Title" className="flex-1 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                </div>
+                <textarea value={editGap.description} onChange={e => setEditGap({...editGap, description: e.target.value})} placeholder="Description" rows={2} className="w-full bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu resize-none" />
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setEditingGapId(null)} className="bg-paper-3 text-ink-2 px-4 py-1.5 rounded font-sans text-[11px] uppercase tracking-wider font-medium">Cancel</button>
+                  <button onClick={() => handleSaveGap(gap.id)} className="bg-cucu text-white px-4 py-1.5 rounded font-sans text-[11px] uppercase tracking-wider font-medium">Save</button>
+                </div>
               </div>
-              <div>
-                <div className="font-serif text-[16px] text-ink mb-1">{gap.title}</div>
-                <div className="font-sans text-[13px] text-ink-2 leading-relaxed">{gap.description}</div>
+            ) : (
+              <div 
+                key={gap.id} 
+                className="flex gap-4 items-start py-4 border-b border-paper-3 last:border-none group cursor-pointer hover:bg-paper-2 -mx-2 px-2 rounded transition-colors"
+                onClick={() => {
+                  setEditGap({ type: gap.type, title: gap.title, description: gap.description });
+                  setEditingGapId(gap.id);
+                }}
+              >
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[14px] shrink-0 mt-0.5 ${
+                  gap.type === 'warn' ? 'bg-warn text-white' : 
+                  gap.type === 'gold' ? 'bg-gold text-white' : 
+                  'bg-cucu text-white'
+                }`}>
+                  {gap.type === 'warn' ? '!' : gap.type === 'gold' ? '~' : '✓'}
+                </div>
+                <div className="flex-1">
+                  <div className="font-serif text-[16px] text-ink mb-1 group-hover:text-cucu transition-colors">{gap.title}</div>
+                  <div className="font-sans text-[13px] text-ink-2 leading-relaxed">{gap.description}</div>
+                </div>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleDeleteGap(gap.id); }}
+                  className="opacity-0 group-hover:opacity-100 text-ink-3 hover:text-red-500 transition-opacity p-2"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
-            </div>
+            )
           ))}
         </div>
       </section>
 
       {/* NEXT 90 DAYS */}
       <section>
-        <h2 className="text-[11px] tracking-[0.2em] uppercase text-ink-3 mb-4 font-sans">Next 90 Days</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-[11px] tracking-[0.2em] uppercase text-ink-3 font-sans">Next 90 Days</h2>
+          <button onClick={() => setAddingRoadmap(!addingRoadmap)} className="text-ink-3 hover:text-cucu transition-colors p-1">
+            <Plus size={14} className={`transition-transform ${addingRoadmap ? "rotate-45" : ""}`} />
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {addingRoadmap && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-4 overflow-hidden">
+              <div className="bg-paper-2 p-3 rounded-md border border-paper-3 space-y-2">
+                <div className="flex gap-2">
+                  <input autoFocus value={newRoadmap.period} onChange={e => setNewRoadmap({...newRoadmap, period: e.target.value})} placeholder="Period (e.g. Q3)" className="w-24 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                  <input value={newRoadmap.title} onChange={e => setNewRoadmap({...newRoadmap, title: e.target.value})} placeholder="Roadmap Title" className="flex-1 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                </div>
+                <textarea value={newRoadmap.description} onChange={e => setNewRoadmap({...newRoadmap, description: e.target.value})} placeholder="Description" rows={2} className="w-full bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu resize-none" />
+                <div className="flex justify-end">
+                  <button onClick={handleAddRoadmap} className="bg-cucu text-white px-4 py-1.5 rounded font-sans text-[11px] uppercase tracking-wider font-medium">Add Item</button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="space-y-0.5">
           {state.roadmap.map((item: RoadmapItem) => (
-            <div key={item.id} className="flex gap-4 py-4 border-b border-paper-3 last:border-none">
-              <div className="font-sans text-[11px] text-ink-3 min-w-[70px] pt-1 uppercase tracking-wider">{item.period}</div>
-              <div className="flex-1">
-                <div className="font-serif text-[16px] text-ink mb-1">{item.title}</div>
-                <div className="font-sans text-[13px] text-ink-2 leading-relaxed">{item.description}</div>
+            editingRoadmapId === item.id ? (
+              <div key={item.id} className="bg-paper-2 p-3 rounded-md border border-paper-3 space-y-2 mb-2">
+                <div className="flex gap-2">
+                  <input autoFocus value={editRoadmap.period} onChange={e => setEditRoadmap({...editRoadmap, period: e.target.value})} placeholder="Period (e.g. Q3)" className="w-24 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                  <input value={editRoadmap.title} onChange={e => setEditRoadmap({...editRoadmap, title: e.target.value})} placeholder="Roadmap Title" className="flex-1 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                </div>
+                <textarea value={editRoadmap.description} onChange={e => setEditRoadmap({...editRoadmap, description: e.target.value})} placeholder="Description" rows={2} className="w-full bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu resize-none" />
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setEditingRoadmapId(null)} className="bg-paper-3 text-ink-2 px-4 py-1.5 rounded font-sans text-[11px] uppercase tracking-wider font-medium">Cancel</button>
+                  <button onClick={() => handleSaveRoadmap(item.id)} className="bg-cucu text-white px-4 py-1.5 rounded font-sans text-[11px] uppercase tracking-wider font-medium">Save</button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div 
+                key={item.id} 
+                className="flex gap-4 py-4 border-b border-paper-3 last:border-none group cursor-pointer hover:bg-paper-2 -mx-2 px-2 rounded transition-colors"
+                onClick={() => {
+                  setEditRoadmap({ period: item.period, title: item.title, description: item.description });
+                  setEditingRoadmapId(item.id);
+                }}
+              >
+                <div className="font-sans text-[11px] text-ink-3 min-w-[70px] pt-1 uppercase tracking-wider">{item.period}</div>
+                <div className="flex-1">
+                  <div className="font-serif text-[16px] text-ink mb-1 group-hover:text-cucu transition-colors">{item.title}</div>
+                  <div className="font-sans text-[13px] text-ink-2 leading-relaxed">{item.description}</div>
+                </div>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleDeleteRoadmap(item.id); }}
+                  className="opacity-0 group-hover:opacity-100 text-ink-3 hover:text-red-500 transition-opacity p-2"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            )
           ))}
         </div>
       </section>
 
       {/* SERVICES & PRICING */}
       <section>
-        <h2 className="text-[11px] tracking-[0.2em] uppercase text-ink-3 mb-4 font-sans">Services & Pricing</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-[11px] tracking-[0.2em] uppercase text-ink-3 font-sans">Services & Pricing</h2>
+          <button onClick={() => setAddingService(!addingService)} className="text-ink-3 hover:text-cucu transition-colors p-1">
+            <Plus size={14} className={`transition-transform ${addingService ? "rotate-45" : ""}`} />
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {addingService && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-4 overflow-hidden">
+              <div className="bg-paper-2 p-3 rounded-md border border-paper-3 space-y-2">
+                <div className="flex gap-2">
+                  <input autoFocus value={newService.title} onChange={e => setNewService({...newService, title: e.target.value})} placeholder="Service Title" className="flex-1 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                  <input value={newService.price} onChange={e => setNewService({...newService, price: e.target.value})} placeholder="Price" className="w-24 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                </div>
+                <textarea value={newService.description} onChange={e => setNewService({...newService, description: e.target.value})} placeholder="Description" rows={2} className="w-full bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu resize-none" />
+                <div className="flex justify-end">
+                  <button onClick={handleAddService} className="bg-cucu text-white px-4 py-1.5 rounded font-sans text-[11px] uppercase tracking-wider font-medium">Add Service</button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="grid grid-cols-1 gap-3">
           {state.services?.map((service: any) => (
-            <div key={service.id} className="bg-paper-2 p-4 border border-paper-3 rounded-md flex justify-between items-start group hover:bg-paper-3 transition-colors">
-              <div className="flex-1">
-                <div className="font-serif text-[16px] text-ink mb-1">{service.title}</div>
-                <div className="font-sans text-[12px] text-ink-2 leading-relaxed max-w-md">{service.description}</div>
+            editingServiceId === service.id ? (
+              <div key={service.id} className="bg-paper-2 p-3 rounded-md border border-paper-3 space-y-2 mb-2">
+                <div className="flex gap-2">
+                  <input autoFocus value={editService.title} onChange={e => setEditService({...editService, title: e.target.value})} placeholder="Service Title" className="flex-1 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                  <input value={editService.price} onChange={e => setEditService({...editService, price: e.target.value})} placeholder="Price" className="w-24 bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu" />
+                </div>
+                <textarea value={editService.description} onChange={e => setEditService({...editService, description: e.target.value})} placeholder="Description" rows={2} className="w-full bg-paper border border-paper-3 rounded px-3 py-1.5 font-sans text-[12px] outline-none focus:border-cucu resize-none" />
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setEditingServiceId(null)} className="bg-paper-3 text-ink-2 px-4 py-1.5 rounded font-sans text-[11px] uppercase tracking-wider font-medium">Cancel</button>
+                  <button onClick={() => handleSaveService(service.id)} className="bg-cucu text-white px-4 py-1.5 rounded font-sans text-[11px] uppercase tracking-wider font-medium">Save</button>
+                </div>
               </div>
-              <div className="font-serif italic text-cucu text-[15px] ml-4 whitespace-nowrap">{service.price}</div>
-            </div>
+            ) : (
+              <div 
+                key={service.id} 
+                className="bg-paper-2 p-4 border border-paper-3 rounded-md flex justify-between items-start group hover:bg-paper-3 transition-colors relative cursor-pointer"
+                onClick={() => {
+                  setEditService({ title: service.title, price: service.price, description: service.description });
+                  setEditingServiceId(service.id);
+                }}
+              >
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleDeleteService(service.id); }}
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-ink-3 hover:text-red-500 transition-opacity p-1"
+                >
+                  <Trash2 size={14} />
+                </button>
+                <div className="flex-1 pr-6">
+                  <div className="font-serif text-[16px] text-ink mb-1 group-hover:text-cucu transition-colors">{service.title}</div>
+                  <div className="font-sans text-[12px] text-ink-2 leading-relaxed max-w-md">{service.description}</div>
+                </div>
+                <div className="font-serif italic text-cucu text-[15px] ml-4 whitespace-nowrap">{service.price}</div>
+              </div>
+            )
           ))}
         </div>
       </section>
