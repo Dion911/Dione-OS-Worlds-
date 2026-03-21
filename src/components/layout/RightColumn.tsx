@@ -1,9 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOS } from '../../store/OSContext';
 
+const INSIGHTS = {
+  lota: [
+    "Lota Kopi faces outward — neighborhood, people, joy. Keep the community engaged.",
+    "Coffee is just the medium. The real product is the space and the feeling it gives.",
+    "Your brand book is solidifying. Ensure every new barista understands the core manifesto.",
+    "The neighborhood is responding. What's the next small delight you can offer them?"
+  ],
+  cucu: [
+    "Cucufate faces inward — memory, intention, legacy. Same soul. Two expressions. That's rare.",
+    "The name, the origin, the manifesto — most studios never have this. You already do.",
+    "Your portfolio exists but isn't Cucufate-branded yet. Re-frame your past work under the new lens.",
+    "Legacy isn't built in a day. Protect your 90-minute daily block for the studio."
+  ],
+  corp: [
+    "Corporate life provides the runway. Protect your energy here so you can build your legacy outside.",
+    "Treat your day job as your first angel investor. It funds the studio.",
+    "Maintain boundaries. 9-to-5 pays the bills, 5-to-9 builds the empire.",
+    "Extract the skills, leave the stress. Every corporate project is a lesson in operations."
+  ],
+  pse: [
+    "Markets are emotional; your strategy shouldn't be. Stick to the plan.",
+    "Risk management is more important than stock picking. Protect the downside.",
+    "Patience pays. Wait for the setup, don't force the trade.",
+    "Review your recent trades. What did the losers have in common?"
+  ]
+};
+
 export default function RightColumn() {
-  const { logs, addLog } = useOS();
+  const { logs, addLog, activeWorld } = useOS();
   const [captureInput, setCaptureInput] = useState('');
+  const [currentInsight, setCurrentInsight] = useState(INSIGHTS.cucu[0]);
+
+  useEffect(() => {
+    const worldInsights = INSIGHTS[activeWorld] || INSIGHTS.cucu;
+    const randomInsight = worldInsights[Math.floor(Math.random() * worldInsights.length)];
+    setCurrentInsight(randomInsight);
+  }, [activeWorld]);
 
   const handleLog = () => {
     if (!captureInput.trim()) return;
@@ -27,8 +61,8 @@ export default function RightColumn() {
             </span> 
             AI Insight
           </div>
-          <div className="text-[13px] text-[rgba(245,240,232,0.72)] leading-[1.7] relative z-10">
-            Two manifestos written. Lota Kopi faces outward — neighborhood, people, joy. Cucufate faces inward — memory, intention, legacy. Same soul. Two expressions. That's rare.
+          <div className="text-[13px] text-[rgba(245,240,232,0.72)] leading-[1.7] relative z-10 transition-opacity duration-300">
+            {currentInsight}
           </div>
         </div>
       </div>

@@ -9,7 +9,14 @@ import {
   Calendar as CalendarIcon,
   CheckCircle2,
   Circle,
-  X
+  X,
+  Bell,
+  Thermometer,
+  Settings,
+  ChevronUp,
+  ChevronDown,
+  AlarmClock,
+  Moon
 } from 'lucide-react';
 import { 
   format, 
@@ -77,51 +84,104 @@ export default function TimelinePanel() {
     setIsAdding(false);
   };
 
-  const hours = format(currentTime, 'h');
-  const minutes = format(currentTime, 'mm');
-  const ampm = format(currentTime, 'a');
-  const dayName = format(currentTime, 'EEE').toUpperCase();
-  const dayNum = format(currentTime, 'd');
-
   return (
     <div className="animate-in fade-in duration-500 h-full flex flex-col items-center p-4 overflow-y-auto">
-      <div className="bg-black rounded-[20px] md:rounded-[32px] w-full max-w-[480px] aspect-[2/1] relative overflow-hidden flex items-center px-4 sm:px-6 md:px-10 shadow-2xl border-[3px] md:border-[5px] border-[#1c1c1e] shrink-0 mt-4">
-        
-        {/* Top center dots (camera/sensor cutout simulation) */}
-        <div className="absolute top-2 md:top-3 left-1/2 -translate-x-1/2 flex gap-1 bg-[#1c1c1e] px-2 md:px-3 py-1 md:py-1.5 rounded-full">
-          <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-white/20"></div>
-          <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-white/20"></div>
-          <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-white/20"></div>
-          <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-white/20"></div>
-        </div>
-
-        {/* Left Side: Huge Digital Clock */}
-        <div className="flex-1 flex items-baseline justify-center tracking-tighter pr-2 sm:pr-4" style={{ color: '#8fb4f9' }}>
-          <span className="text-[60px] sm:text-[84px] md:text-[102px] font-semibold leading-none">{hours}</span>
-          <span className="text-[60px] sm:text-[84px] md:text-[102px] font-semibold leading-none relative -top-[0.05em] md:-top-2">:</span>
-          <span className="text-[60px] sm:text-[84px] md:text-[102px] font-semibold leading-none">{minutes}</span>
-        </div>
-
-        {/* Right Side: Date, Temp, Alarm */}
-        <div className="w-[60px] sm:w-[90px] md:w-[110px] flex flex-col justify-between h-[70%] md:h-[60%] py-1 md:py-2">
+      
+      {/* NEW LCD CLOCK */}
+      <div className="bg-[#222] p-4 md:p-6 rounded-[24px] md:rounded-[32px] w-full max-w-[500px] shadow-2xl border-[4px] md:border-[8px] border-[#111] shrink-0 mt-4 mx-auto">
+        <div className="bg-[#a3b096] rounded-lg p-3 md:p-4 flex flex-col border-[2px] md:border-[3px] border-[#0a0a0a] shadow-[inset_0_0_15px_rgba(0,0,0,0.15)] text-[#1a1a1a]">
           
-          {/* Date & Temp */}
-          <div className="flex flex-col items-end">
-            <div className="flex items-baseline gap-1 sm:gap-1.5 md:gap-2">
-              <span className="text-[12px] sm:text-[18px] md:text-[24px] font-semibold text-[#8fb4f9]">{dayName}</span>
-              <span className="text-[12px] sm:text-[18px] md:text-[24px] font-semibold text-white">{dayNum}</span>
-            </div>
-            <div className="text-[14px] sm:text-[22px] md:text-[28px] font-medium text-white mt-0 md:mt-0.5">
-              37°
+          {/* Top Row: Day */}
+          <div className="flex justify-between items-start border-b-[2px] border-[#1a1a1a] pb-1 md:pb-2 relative">
+            <span className="text-[10px] md:text-[12px] font-bold tracking-wider absolute top-0 left-0">DAY</span>
+            <div className="w-full text-center">
+              <span className="font-mono text-[28px] md:text-[40px] tracking-[0.15em] uppercase leading-none" style={{ fontFamily: '"DS-Digital", sans-serif', fontWeight: 600 }}>
+                {format(currentTime, 'EEEE')}
+              </span>
             </div>
           </div>
 
-          {/* Alarm */}
-          <div className="flex flex-col items-end gap-0.5">
-            <Clock className="text-[#8fb4f9] mb-0.5 w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
-            <div className="flex items-baseline gap-0.5 text-white">
-              <span className="text-[11px] sm:text-[16px] md:text-[20px] font-medium">7:30</span>
-              <span className="text-[8px] sm:text-[10px] md:text-[13px] font-medium uppercase">{ampm}</span>
+          {/* Middle Row: Time */}
+          <div className="flex justify-between items-center border-b-[2px] border-[#1a1a1a] py-2 md:py-3 relative">
+            <span className="text-[10px] md:text-[12px] font-bold tracking-wider absolute top-2 left-0">TIME</span>
+            <div className="w-full text-center flex justify-center items-baseline gap-1 md:gap-2">
+              <span className="font-mono text-[64px] md:text-[96px] leading-none tracking-tight" style={{ fontFamily: '"DS-Digital", sans-serif', fontWeight: 700 }}>
+                {format(currentTime, 'HH')}:{format(currentTime, 'mm')}
+              </span>
+              <span className="font-mono text-[32px] md:text-[48px] leading-none tracking-tight" style={{ fontFamily: '"DS-Digital", sans-serif', fontWeight: 700 }}>
+                :{format(currentTime, 'ss')}
+              </span>
+            </div>
+          </div>
+
+          {/* Bottom Row: Date, Month, Temp */}
+          <div className="flex justify-between items-center pt-2 md:pt-3 relative">
+            {/* Date */}
+            <div className="flex flex-col items-center relative pl-1 md:pl-2">
+              <div className="relative flex items-center justify-center w-[45px] md:w-[60px] h-[55px] md:h-[70px]">
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                  <path d="M2 2 H 42 L 58 18 V 68 H 2 Z" stroke="#1a1a1a" strokeWidth="3" fill="transparent" />
+                  <path d="M42 2 V 18 H 58" stroke="#1a1a1a" strokeWidth="3" fill="transparent" />
+                </svg>
+                <span className="font-mono text-[24px] md:text-[36px] leading-none relative z-10 -mt-2" style={{ fontFamily: '"DS-Digital", sans-serif', fontWeight: 700 }}>
+                  {format(currentTime, 'd')}
+                </span>
+                <span className="absolute bottom-1.5 left-2 text-[8px] md:text-[10px] font-bold z-10">DATE</span>
+              </div>
+            </div>
+
+            {/* Month */}
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] md:text-[12px] font-bold tracking-wider mb-0.5 md:mb-1">MONTH</span>
+              <span className="font-mono text-[28px] md:text-[40px] tracking-[0.15em] uppercase leading-none" style={{ fontFamily: '"DS-Digital", sans-serif', fontWeight: 600 }}>
+                {format(currentTime, 'MMMM')}
+              </span>
+            </div>
+
+            {/* Temp */}
+            <div className="flex flex-col items-end border-l-[2px] border-[#1a1a1a] pl-2 md:pl-4">
+              <span className="text-[10px] md:text-[12px] font-bold tracking-wider mb-0.5 md:mb-1">TEMP</span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <span className="font-mono text-[28px] md:text-[40px] leading-none" style={{ fontFamily: '"DS-Digital", sans-serif', fontWeight: 700 }}>34</span>
+                <div className="flex flex-col items-center">
+                  <Thermometer className="w-4 h-4 md:w-6 md:h-6" />
+                  <span className="font-mono text-[12px] md:text-[16px] leading-none font-bold">°C</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Buttons */}
+          <div className="flex justify-between items-center mt-3 md:mt-4 px-2 md:px-6">
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="border-[2px] border-[#1a1a1a] rounded-full p-0.5 md:p-1">
+                <Settings className="w-3 h-3 md:w-4 md:h-4" />
+              </div>
+              <span className="text-[7px] md:text-[9px] font-bold uppercase">SET</span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="border-[2px] border-[#1a1a1a] rounded-full p-0.5 md:p-1">
+                <ChevronUp className="w-3 h-3 md:w-4 md:h-4" />
+              </div>
+              <span className="text-[7px] md:text-[9px] font-bold uppercase">UP</span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="border-[2px] border-[#1a1a1a] rounded-full p-0.5 md:p-1">
+                <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
+              </div>
+              <span className="text-[7px] md:text-[9px] font-bold uppercase">DOWN</span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="border-[2px] border-[#1a1a1a] rounded-full p-0.5 md:p-1">
+                <AlarmClock className="w-3 h-3 md:w-4 md:h-4" />
+              </div>
+              <span className="text-[7px] md:text-[9px] font-bold uppercase">ALARM</span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="border-[2px] border-[#1a1a1a] rounded-full p-0.5 md:p-1">
+                <Moon className="w-3 h-3 md:w-4 md:h-4" />
+              </div>
+              <span className="text-[7px] md:text-[9px] font-bold uppercase">SNOOZE</span>
             </div>
           </div>
 
