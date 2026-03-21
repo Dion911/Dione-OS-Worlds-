@@ -8,6 +8,7 @@ import RightColumn from './components/layout/RightColumn';
 import Footer from './components/layout/Footer';
 import MobileNav from './components/layout/MobileNav';
 import QuickAddModal from './components/layout/QuickAddModal';
+import CommandPalette from './components/layout/CommandPalette';
 import { OSProvider, useOS } from './store/OSContext';
 import { AnimatePresence, motion } from 'motion/react';
 
@@ -84,6 +85,7 @@ function OSContent() {
       </div>
       
       <QuickAddModal isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} />
+      <CommandPalette />
       <Toast />
     </div>
   );

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Plus, Trash2, Edit3, Check, X } from 'lucide-react';
 import { useOS } from '../../store/OSContext';
 
 const INSIGHTS = {
@@ -29,9 +31,11 @@ const INSIGHTS = {
 };
 
 export default function RightColumn() {
-  const { logs, addLog, activeWorld } = useOS();
+  const { logs, addLog, updateLog, deleteLog, activeWorld, milestones, toggleMilestone, showToast, addFocusItem } = useOS();
   const [captureInput, setCaptureInput] = useState('');
   const [currentInsight, setCurrentInsight] = useState(INSIGHTS.cucu[0]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState('');
 
   useEffect(() => {
     const worldInsights = INSIGHTS[activeWorld] || INSIGHTS.cucu;
@@ -47,6 +51,23 @@ export default function RightColumn() {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleLog();
+  };
+
+  const startEditing = (index: number, value: string) => {
+    setEditingIndex(index);
+    setEditValue(value);
+  };
+
+  const saveEdit = (index: number) => {
+    if (!editValue.trim()) return;
+    updateLog(index, editValue);
+    setEditingIndex(null);
+    showToast("Capture updated");
+  };
+
+  const cancelEdit = () => {
+    setEditingIndex(null);
+    setEditValue('');
   };
 
   return (
@@ -84,73 +105,166 @@ export default function RightColumn() {
       </div>
 
       {/* Vision milestones */}
-      <div className="px-3.5 py-3 border-t border-paper-3 flex-1">
-        <div className="text-[13px] tracking-[0.14em] uppercase text-ink-3 mb-2">Vision Milestones</div>
+      <div className="px-3.5 py-3 border-t border-paper-3 flex-1 overflow-y-auto scrollbar-hide">
+        <div className="flex justify-between items-center mb-2">
+          <div className="text-[13px] tracking-[0.14em] uppercase text-ink-3">Vision Milestones</div>
+          <div className="text-[10px] font-mono text-gold">
+            {milestones.filter(m => m.completed).length}/{milestones.length}
+          </div>
+        </div>
+        
+        {/* Progress bar */}
+        <div className="h-[2px] w-full bg-paper-3 mb-4 rounded-full overflow-hidden">
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: `${(milestones.filter(m => m.completed).length / milestones.length) * 100}%` }}
+            className="h-full bg-gold"
+          />
+        </div>
+
         <div className="flex flex-col gap-[5px]">
-          <div className="flex gap-[7px] items-center text-[13px]">
-            <div className="w-[5px] h-[5px] rounded-full shrink-0 bg-lota"></div>
-            <div className="text-ink-2">Lota Kopi · manifesto written</div>
-          </div>
-          <div className="flex gap-[7px] items-center text-[13px]">
-            <div className="w-[5px] h-[5px] rounded-full shrink-0 bg-lota"></div>
-            <div className="text-ink-2">Lota Kopi · brand book complete</div>
-          </div>
-          <div className="flex gap-[7px] items-center text-[13px]">
-            <div className="w-[5px] h-[5px] rounded-full shrink-0 bg-cucu"></div>
-            <div className="text-ink-2">Cucufate · manifesto written</div>
-          </div>
-          <div className="flex gap-[7px] items-center text-[13px]">
-            <div className="w-[5px] h-[5px] rounded-full shrink-0 bg-gold"></div>
-            <div className="text-ink-2">Dione OS · v2 unified dashboard</div>
-          </div>
-          <div className="flex gap-[7px] items-center text-[13px]">
-            <div className="w-[5px] h-[5px] rounded-full shrink-0 bg-ink-3"></div>
-            <div className="text-ink-3">Cucufate · 2nd location scouted</div>
-          </div>
-          <div className="flex gap-[7px] items-center text-[13px]">
-            <div className="w-[5px] h-[5px] rounded-full shrink-0 bg-ink-3"></div>
-            <div className="text-ink-3">CL · portfolio case study published</div>
-          </div>
-          <div className="flex gap-[7px] items-center text-[13px]">
-            <div className="w-[5px] h-[5px] rounded-full shrink-0 bg-ink-3"></div>
-            <div className="text-ink-3">Dione OS · shipped as PWA</div>
-          </div>
-          <div className="flex gap-[7px] items-center text-[13px]">
-            <div className="w-[5px] h-[5px] rounded-full shrink-0 bg-ink-3"></div>
-            <div className="text-ink-3">Leave corporate · full studio income</div>
-          </div>
+          {milestones.map((milestone) => (
+            <motion.div 
+              key={milestone.id}
+              whileHover={{ x: 2 }}
+              onClick={() => toggleMilestone(milestone.id)}
+              className="flex gap-[7px] items-center text-[13px] cursor-pointer group"
+            >
+              <div className={`w-[6px] h-[6px] rounded-full shrink-0 transition-all duration-300 ${
+                milestone.completed 
+                  ? 'bg-gold ring-2 ring-gold/20' 
+                  : `bg-paper-3 group-hover:bg-ink-3`
+              }`}></div>
+              <div className={`transition-all duration-300 ${
+                milestone.completed ? 'text-ink-3 line-through opacity-60' : 'text-ink-2'
+              }`}>
+                {milestone.text}
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
 
       {/* Quick capture */}
-      <div className="px-3.5 py-3 border-t border-paper-3 mt-auto">
-        <div className="text-[13px] tracking-[0.14em] uppercase text-ink-3 mb-2">Quick Capture</div>
-        <input 
-          type="text" 
-          className="w-full font-sans text-[13px] bg-paper-2 border-[0.5px] border-paper-3 rounded-[6px] px-[9px] py-[6px] text-ink outline-none focus:border-ink-3"
-          placeholder="idea / note / intent..."
-          value={captureInput}
-          onChange={e => setCaptureInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <div className="flex gap-[5px] mt-[5px]">
+      <div className="px-3.5 py-3 border-t border-paper-3 mt-auto bg-paper-2/30">
+        <div className="flex justify-between items-center mb-2">
+          <div className="text-[11px] tracking-[0.2em] uppercase text-ink-3 font-bold">Quick Capture</div>
+          {logs.length > 0 && (
+            <button 
+              onClick={() => {
+                showToast("Logs are synced to your vision");
+              }}
+              className="text-[9px] uppercase tracking-widest text-ink-3 hover:text-ink transition-colors"
+            >
+              Recent
+            </button>
+          )}
+        </div>
+        
+        <div className="relative group">
+          <input 
+            type="text" 
+            className="w-full font-sans text-[13px] bg-paper border border-paper-3 rounded-[6px] px-[11px] py-[8px] text-ink outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/20 transition-all placeholder:text-ink-3/50"
+            placeholder="idea / note / intent..."
+            value={captureInput}
+            onChange={e => setCaptureInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-focus-within:opacity-100 transition-opacity">
+            <span className="text-[9px] font-mono text-ink-3 bg-paper-2 px-1 rounded border border-paper-3">↵</span>
+          </div>
+        </div>
+
+        <div className="flex gap-[6px] mt-2">
           <button 
             onClick={handleLog}
-            className="flex-1 font-sans text-[12px] tracking-[0.08em] px-[6px] py-[5px] rounded-[6px] cursor-pointer border-none transition-opacity hover:opacity-75 bg-ink text-paper"
+            disabled={!captureInput.trim()}
+            className="flex-1 font-sans text-[11px] tracking-[0.12em] font-bold px-[6px] py-[7px] rounded-[6px] cursor-pointer border-none transition-all hover:bg-ink-2 bg-ink text-paper disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             LOG
           </button>
           <button 
-            onClick={() => setCaptureInput('')}
-            className="flex-1 font-sans text-[12px] tracking-[0.08em] px-[6px] py-[5px] rounded-[6px] cursor-pointer transition-opacity hover:opacity-75 bg-transparent text-ink border-[0.5px] border-ink-3"
+            onClick={() => {
+              if (captureInput.trim()) {
+                showToast(`Querying: ${captureInput}`);
+                setCaptureInput('');
+              }
+            }}
+            className="flex-1 font-sans text-[11px] tracking-[0.12em] font-bold px-[6px] py-[7px] rounded-[6px] cursor-pointer transition-all hover:bg-paper-2 bg-paper text-ink border border-paper-3 flex items-center justify-center gap-1"
           >
-            ASK ↗
+            ASK <span className="text-[10px]">↗</span>
           </button>
         </div>
-        <div className="mt-[6px] text-[12px] text-ink-3 leading-[1.7]">
-          {logs.map((log, i) => (
-            <div key={i}>— {log}</div>
-          ))}
+
+        <div className="mt-4 space-y-2">
+          <AnimatePresence initial={false}>
+            {logs.map((log, i) => (
+              <motion.div 
+                key={`${log}-${i}`}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="group flex flex-col gap-1 py-1 border-b border-transparent hover:border-paper-3 transition-all"
+              >
+                {editingIndex === i ? (
+                  <div className="flex items-center gap-2 w-full">
+                    <input 
+                      autoFocus
+                      className="flex-1 bg-paper border border-paper-3 rounded px-2 py-1 text-[12px] outline-none focus:border-gold/50"
+                      value={editValue}
+                      onChange={e => setEditValue(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') saveEdit(i);
+                        if (e.key === 'Escape') cancelEdit();
+                      }}
+                    />
+                    <button onClick={() => saveEdit(i)} className="text-emerald-600"><Check size={14}/></button>
+                    <button onClick={cancelEdit} className="text-red-600"><X size={14}/></button>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2 text-[12px] text-ink-2 leading-[1.5]">
+                    <span className="text-gold mt-0.5 shrink-0">—</span>
+                    <span className="flex-1">{log}</span>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => startEditing(i, log)}
+                        title="Edit capture"
+                        className="p-1 hover:text-ink transition-colors"
+                      >
+                        <Edit3 size={12} />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          addFocusItem(log, activeWorld);
+                          showToast("Promoted to task");
+                        }}
+                        title="Promote to task"
+                        className="p-1 hover:text-gold transition-colors"
+                      >
+                        <Plus size={12} />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          deleteLog(i);
+                          showToast("Capture deleted");
+                        }}
+                        title="Delete capture"
+                        className="p-1 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          
+          {logs.length === 0 && (
+            <div className="text-[11px] text-ink-3 italic py-2 opacity-50">
+              No recent captures.
+            </div>
+          )}
         </div>
       </div>
     </div>

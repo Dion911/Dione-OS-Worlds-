@@ -14,12 +14,30 @@ export interface FocusItem {
   done: boolean;
 }
 
+export interface VisionMilestone {
+  id: string;
+  text: string;
+  world: World | 'system';
+  completed: boolean;
+}
+
 const DEFAULT_FOCUS_ITEMS: FocusItem[] = [
   { id: 1, text: 'Cucufate: open studio fund account', color: 'bg-cucu', done: false },
   { id: 2, text: 'CL: review showroom floor plan v3', color: 'bg-corp', done: true },
   { id: 3, text: 'Lota Kopi: test egg waffle variation', color: 'bg-lota', done: false },
   { id: 4, text: 'Dione OS: define 3 PWA modules', color: 'bg-gold', done: false },
   { id: 5, text: 'Health: 7k steps + 20 min reading', color: 'bg-ink-3', done: false },
+];
+
+const DEFAULT_MILESTONES: VisionMilestone[] = [
+  { id: '1', text: 'Lota Kopi · manifesto written', world: 'lota', completed: true },
+  { id: '2', text: 'Lota Kopi · brand book complete', world: 'lota', completed: true },
+  { id: '3', text: 'Cucufate · manifesto written', world: 'cucu', completed: true },
+  { id: '4', text: 'Dione OS · v2 unified dashboard', world: 'system', completed: true },
+  { id: '5', text: 'Cucufate · 2nd location scouted', world: 'cucu', completed: false },
+  { id: '6', text: 'CL · portfolio case study published', world: 'corp', completed: false },
+  { id: '7', text: 'Dione OS · shipped as PWA', world: 'system', completed: false },
+  { id: '8', text: 'Leave corporate · full studio income', world: 'corp', completed: false },
 ];
 
 interface OSContextType {
@@ -32,8 +50,12 @@ interface OSContextType {
   focusItems: FocusItem[];
   toggleFocus: (id: number) => void;
   addFocusItem: (text: string, world: World) => void;
+  milestones: VisionMilestone[];
+  toggleMilestone: (id: string) => void;
   logs: string[];
   addLog: (log: string) => void;
+  updateLog: (index: number, newLog: string) => void;
+  deleteLog: (index: number) => void;
   user: User | null;
   logout: () => void;
   toastMessage: string | null;
@@ -81,6 +103,7 @@ export function OSProvider({ children }: { children: React.ReactNode }) {
   const [mobileView, setMobileView] = useState<MobileView>('dashboard');
 
   const [focusItems, setFocusItems] = useState<FocusItem[]>(DEFAULT_FOCUS_ITEMS);
+  const [milestones, setMilestones] = useState<VisionMilestone[]>(DEFAULT_MILESTONES);
   const [logs, setLogs] = useState<string[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -103,6 +126,7 @@ export function OSProvider({ children }: { children: React.ReactNode }) {
     if (!isAuthReady) return;
     if (!user) {
       setFocusItems(DEFAULT_FOCUS_ITEMS);
+      setMilestones(DEFAULT_MILESTONES);
       setLogs([]);
       return;
     }
@@ -117,6 +141,7 @@ export function OSProvider({ children }: { children: React.ReactNode }) {
           await setDoc(userDocRef, {
             uid: user.uid,
             focusItems: DEFAULT_FOCUS_ITEMS,
+            milestones: DEFAULT_MILESTONES,
             logs: []
           });
         }
@@ -130,6 +155,7 @@ export function OSProvider({ children }: { children: React.ReactNode }) {
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data.focusItems) setFocusItems(data.focusItems);
+        if (data.milestones) setMilestones(data.milestones);
         if (data.logs) setLogs(data.logs);
       }
     }, (error) => {
@@ -148,7 +174,19 @@ export function OSProvider({ children }: { children: React.ReactNode }) {
         await setDoc(doc(db, 'users', user.uid), { focusItems: newItems }, { merge: true });
       } catch (error) {
         handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
-        // Revert on failure could be implemented here
+      }
+    }
+  };
+
+  const toggleMilestone = async (id: string) => {
+    const newMilestones = milestones.map(m => m.id === id ? { ...m, completed: !m.completed } : m);
+    setMilestones(newMilestones);
+    
+    if (user) {
+      try {
+        await setDoc(doc(db, 'users', user.uid), { milestones: newMilestones }, { merge: true });
+      } catch (error) {
+        handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
       }
     }
   };
@@ -177,6 +215,34 @@ export function OSProvider({ children }: { children: React.ReactNode }) {
     if (!log.trim()) return;
     const newLogs = [log.trim(), ...logs].slice(0, 5);
     setLogs(newLogs); // Optimistic update
+    
+    if (user) {
+      try {
+        await setDoc(doc(db, 'users', user.uid), { logs: newLogs }, { merge: true });
+      } catch (error) {
+        handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
+      }
+    }
+  };
+
+  const updateLog = async (index: number, newLog: string) => {
+    if (!newLog.trim()) return;
+    const newLogs = [...logs];
+    newLogs[index] = newLog.trim();
+    setLogs(newLogs);
+    
+    if (user) {
+      try {
+        await setDoc(doc(db, 'users', user.uid), { logs: newLogs }, { merge: true });
+      } catch (error) {
+        handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
+      }
+    }
+  };
+
+  const deleteLog = async (index: number) => {
+    const newLogs = logs.filter((_, i) => i !== index);
+    setLogs(newLogs);
     
     if (user) {
       try {
@@ -234,7 +300,8 @@ export function OSProvider({ children }: { children: React.ReactNode }) {
       activeTab, setActiveTab,
       mobileView, setMobileView,
       focusItems, toggleFocus, addFocusItem,
-      logs, addLog,
+      milestones, toggleMilestone,
+      logs, addLog, updateLog, deleteLog,
       user, logout,
       toastMessage, showToast
     }}>
