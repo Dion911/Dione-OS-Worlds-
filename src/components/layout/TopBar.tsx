@@ -3,7 +3,7 @@ import { useOS } from '../../store/OSContext';
 import { Search, Plus, Menu } from 'lucide-react';
 
 export default function TopBar({ onQuickAdd }: { onQuickAdd: () => void }) {
-  const { activeTab, logout, user } = useOS();
+  const { activeTab, logout, user, setIsSidebarOpen } = useOS();
   
   const titles = {
     focus: { title: 'Dashboard', subtitle: 'See everything at a glance.' },
@@ -16,7 +16,10 @@ export default function TopBar({ onQuickAdd }: { onQuickAdd: () => void }) {
   return (
     <header className="flex items-center justify-between px-5 py-4 bg-paper border-b border-paper-3 shrink-0">
       <div className="flex items-center gap-4">
-        <button className="md:hidden text-ink hover:text-ink-2 transition-colors">
+        <button 
+          onClick={() => setIsSidebarOpen(true)}
+          className="md:hidden text-ink hover:text-ink-2 transition-colors"
+        >
           <Menu size={24} strokeWidth={1.5} />
         </button>
         <div className="flex flex-col gap-[2px]">

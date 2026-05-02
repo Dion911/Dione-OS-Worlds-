@@ -1,9 +1,10 @@
 import React from 'react';
 import { useOS, Tab } from '../../store/OSContext';
-import { Target, Clock, Activity, Wallet, Download, Upload } from 'lucide-react';
+import { Target, Clock, Activity, Wallet, Download, Upload, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function Sidebar() {
-  const { activeTab, setActiveTab } = useOS();
+  const { activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen } = useOS();
   
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'focus', label: 'Focus', icon: <Target size={16} /> },
@@ -12,9 +13,9 @@ export default function Sidebar() {
     { id: 'finance', label: 'Finance', icon: <Wallet size={16} /> },
   ];
 
-  return (
-    <aside className="hidden md:flex flex-col w-[218px] border-r border-paper-3 bg-paper-2 h-full shrink-0">
-      <div className="p-6 border-b border-paper-3">
+  const sidebarContent = (
+    <div className="flex flex-col w-[218px] border-r border-paper-3 bg-paper-2 h-full shrink-0">
+      <div className="p-6 border-b border-paper-3 flex items-center justify-between">
         <div className="flex items-center gap-3 mb-1">
           <div className="w-8 h-8 bg-ink text-paper flex items-center justify-center font-serif text-[20px] rounded-sm">D</div>
           <div>
@@ -22,12 +23,21 @@ export default function Sidebar() {
             <p className="text-[12px] text-ink-3 tracking-wider uppercase">Personal System</p>
           </div>
         </div>
+        <button 
+          onClick={() => setIsSidebarOpen(false)}
+          className="md:hidden text-ink-3 hover:text-ink transition-colors"
+        >
+          <X size={20} />
+        </button>
       </div>
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {tabs.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => {
+              setActiveTab(tab.id);
+              setIsSidebarOpen(false);
+            }}
             className={`w-full flex items-center gap-3 px-4 py-3 text-[12px] tracking-wider uppercase transition-colors rounded-md ${
               activeTab === tab.id ? 'bg-ink text-paper' : 'text-ink-2 hover:bg-paper-3'
             }`}
@@ -47,6 +57,39 @@ export default function Sidebar() {
           Import Data
         </button>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col h-full">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSidebarOpen(false)}
+              className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[60] md:hidden"
+            />
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 z-[70] md:hidden shadow-2xl"
+            >
+              {sidebarContent}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

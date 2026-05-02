@@ -47,6 +47,8 @@ interface OSContextType {
   setActiveTab: (t: Tab) => void;
   mobileView: MobileView;
   setMobileView: (v: MobileView) => void;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (o: boolean) => void;
   focusItems: FocusItem[];
   toggleFocus: (id: number) => void;
   addFocusItem: (text: string, world: World) => void;
@@ -101,6 +103,7 @@ export function OSProvider({ children }: { children: React.ReactNode }) {
   const [activeWorld, setActiveWorld] = useState<World>('lota');
   const [activeTab, setActiveTab] = useState<Tab>('focus');
   const [mobileView, setMobileView] = useState<MobileView>('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [focusItems, setFocusItems] = useState<FocusItem[]>(DEFAULT_FOCUS_ITEMS);
   const [milestones, setMilestones] = useState<VisionMilestone[]>(DEFAULT_MILESTONES);
@@ -299,6 +302,7 @@ export function OSProvider({ children }: { children: React.ReactNode }) {
       activeWorld, setActiveWorld,
       activeTab, setActiveTab,
       mobileView, setMobileView,
+      isSidebarOpen, setIsSidebarOpen,
       focusItems, toggleFocus, addFocusItem,
       milestones, toggleMilestone,
       logs, addLog, updateLog, deleteLog,

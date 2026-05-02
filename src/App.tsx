@@ -44,18 +44,54 @@ function OSContent() {
         <TopBar onQuickAdd={() => setIsQuickAddOpen(true)} />
         
         <main className="flex-1 overflow-y-auto bg-paper-3 flex flex-col relative">
-          <div className={`${mobileView === 'dashboard' ? 'block' : 'hidden'} lg:block`}>
+          {/* Mobile WorldNav with Animation */}
+          <div className="lg:hidden">
+            <AnimatePresence mode="wait">
+              {mobileView === 'dashboard' && (
+                <motion.div
+                  key="world-nav-mobile"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <WorldNav />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          
+          {/* Desktop WorldNav (Always Visible) */}
+          <div className="hidden lg:block">
             <WorldNav />
           </div>
           
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-[204px_1fr_204px] gap-[1px]">
-            <div className={`${mobileView === 'tasks' ? 'block' : 'hidden'} lg:block`}>
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-[204px_1fr_204px] gap-[1px] overflow-hidden">
+            {/* Mobile Animated Content */}
+            <div className="lg:hidden flex-1 relative overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mobileView}
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -20, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="h-full overflow-y-auto"
+                >
+                  {mobileView === 'tasks' && <LeftColumn />}
+                  {mobileView === 'dashboard' && <CenterColumn />}
+                  {mobileView === 'capture' && <RightColumn />}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Desktop Static Content */}
+            <div className="hidden lg:block">
               <LeftColumn />
             </div>
-            <div className={`${mobileView === 'dashboard' ? 'block' : 'hidden'} lg:block`}>
+            <div className="hidden lg:block">
               <CenterColumn />
             </div>
-            <div className={`${mobileView === 'capture' ? 'block' : 'hidden'} lg:block`}>
+            <div className="hidden lg:block">
               <RightColumn />
             </div>
             
