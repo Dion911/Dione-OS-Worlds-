@@ -6,7 +6,7 @@ export default function MobileNav() {
   const { mobileView, setMobileView } = useOS();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-16 bg-paper border-t border-paper-3 flex items-center justify-around lg:hidden z-50">
+    <div className="h-16 shrink-0 bg-paper border-t border-paper-3 flex items-center justify-around lg:hidden z-50">
       <button 
         onClick={() => setMobileView('tasks')}
         className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${mobileView === 'tasks' ? 'text-ink' : 'text-ink-3 hover:text-ink-2'}`}
