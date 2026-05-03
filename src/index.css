@@ -32,11 +32,13 @@
 }
 
 @layer base {
-  html {
-    font-size: 100%;
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
   }
   body {
-    @apply bg-paper text-ink font-sans min-h-screen;
+    @apply bg-paper text-ink font-sans;
   }
 }
 
@@ -54,5 +56,25 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Custom thin scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e0e0e0; /* paper-3 */
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0; /* ink-3 */
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #e0e0e0 transparent;
   }
 }

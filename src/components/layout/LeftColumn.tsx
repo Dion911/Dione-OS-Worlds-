@@ -13,7 +13,7 @@ export default function LeftColumn() {
   };
 
   return (
-    <div className="bg-paper flex flex-col p-0 h-full">
+    <div className="bg-paper flex flex-col flex-1 w-full h-full p-0 overflow-y-auto custom-scrollbar min-h-0">
       {/* Today focus */}
       <div className="px-3.5 pt-3 pb-2">
         <div className="text-[13px] tracking-[0.14em] uppercase text-ink-3 mb-2">Today's Focus</div>

@@ -37,13 +37,13 @@ function OSContent() {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-paper font-sans text-ink selection:bg-gold/30">
+    <div className="fixed inset-0 flex overflow-hidden bg-paper font-sans text-ink selection:bg-gold/30">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden min-h-0 relative">
         <TopBar onQuickAdd={() => setIsQuickAddOpen(true)} />
         
-        <main className="flex-1 overflow-y-auto bg-paper-3 flex flex-col relative">
+        <main className="flex-1 overflow-hidden bg-paper-3 flex flex-col min-h-0 relative">
           {/* Mobile WorldNav with Animation */}
           <div className="lg:hidden">
             <AnimatePresence mode="wait">
@@ -65,38 +65,40 @@ function OSContent() {
             <WorldNav />
           </div>
           
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-[204px_1fr_204px] gap-[1px] overflow-hidden">
-            {/* Mobile Animated Content */}
-            <div className="lg:hidden flex-1 relative overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={mobileView}
-                  initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: -20, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="h-full overflow-y-auto"
-                >
-                  {mobileView === 'tasks' && <LeftColumn />}
-                  {mobileView === 'dashboard' && <CenterColumn />}
-                  {mobileView === 'capture' && <RightColumn />}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+          <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-[204px_1fr_204px] gap-[1px] overflow-hidden min-h-0">
+              {/* Mobile Animated Content */}
+              <div className="lg:hidden relative overflow-hidden flex flex-col h-full min-h-0">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={mobileView}
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -20, opacity: 0 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="flex-1 overflow-y-auto custom-scrollbar w-full flex flex-col min-h-0"
+                  >
+                    {mobileView === 'tasks' && <LeftColumn />}
+                    {mobileView === 'dashboard' && <CenterColumn />}
+                    {mobileView === 'capture' && <RightColumn />}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-            {/* Desktop Static Content */}
-            <div className="hidden lg:block">
-              <LeftColumn />
-            </div>
-            <div className="hidden lg:block">
-              <CenterColumn />
-            </div>
-            <div className="hidden lg:block">
-              <RightColumn />
+              {/* Desktop Static Content */}
+              <div className="hidden lg:flex flex-col min-h-0 overflow-hidden w-full h-full">
+                <LeftColumn />
+              </div>
+              <div className="hidden lg:flex flex-col min-h-0 overflow-hidden w-full h-full">
+                <CenterColumn />
+              </div>
+              <div className="hidden lg:flex flex-col min-h-0 overflow-hidden w-full h-full">
+                <RightColumn />
+              </div>
             </div>
             
             {/* Metrics Full Width Row */}
-            <div className={`lg:col-span-3 grid-cols-1 md:grid-cols-3 gap-[1px] bg-paper-3 border-t border-paper-3 ${mobileView === 'dashboard' ? 'grid' : 'hidden'} lg:grid`}>
+            <div className={`shrink-0 lg:col-span-3 grid-cols-1 md:grid-cols-3 gap-[1px] bg-paper-3 border-t border-paper-3 ${mobileView === 'dashboard' ? 'grid' : 'hidden'} lg:grid`}>
               <div className="bg-paper p-3 md:p-4 text-center cursor-pointer hover:bg-paper-2 transition-colors">
                 <div className="font-serif text-2xl md:text-3xl font-medium text-corp">3</div>
                 <div className="text-[10px] tracking-[0.1em] uppercase text-ink-3 mt-1">Active Projects</div>

@@ -260,8 +260,9 @@ export function OSProvider({ children }: { children: React.ReactNode }) {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed", error);
+      showToast(`Login failed: ${error.message || "Please check your browser console."}`);
     }
   };
 

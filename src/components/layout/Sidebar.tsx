@@ -4,7 +4,7 @@ import { Target, Clock, Activity, Wallet, Download, Upload, X } from 'lucide-rea
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Sidebar() {
-  const { activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen } = useOS();
+  const { activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen, focusItems, milestones, logs, showToast } = useOS();
   
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'focus', label: 'Focus', icon: <Target size={16} /> },
@@ -12,6 +12,32 @@ export default function Sidebar() {
     { id: 'habits', label: 'Habits', icon: <Activity size={16} /> },
     { id: 'finance', label: 'Finance', icon: <Wallet size={16} /> },
   ];
+
+  const handleExport = () => {
+    try {
+      const habitsData = localStorage.getItem('dione_habits_v4');
+      const exportObject = {
+        exportDate: new Date().toISOString(),
+        focusItems,
+        milestones,
+        logs,
+        habits: habitsData ? JSON.parse(habitsData) : []
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObject, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", `dione_os_backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      
+      showToast("Backup downloaded!");
+    } catch (error) {
+      console.error("Failed to export data:", error);
+      showToast("Failed to export data");
+    }
+  };
 
   const sidebarContent = (
     <div className="flex flex-col w-[218px] border-r border-paper-3 bg-paper-2 h-full shrink-0">
@@ -48,7 +74,7 @@ export default function Sidebar() {
         ))}
       </nav>
       <div className="p-4 border-t border-paper-3 space-y-2">
-        <button className="w-full flex items-center gap-3 px-4 py-2 text-[12px] tracking-wider uppercase text-ink-3 hover:text-ink transition-colors rounded-md hover:bg-paper-3">
+        <button onClick={handleExport} className="w-full flex items-center gap-3 px-4 py-2 text-[12px] tracking-wider uppercase text-ink-3 hover:text-ink transition-colors rounded-md hover:bg-paper-3">
           <Download size={16} />
           Export Data
         </button>

@@ -15,9 +15,9 @@ export default function CenterColumn() {
   const tabs: Tab[] = ['focus', 'timeline', 'habits', 'finance', 'sales'];
 
   return (
-    <div className="bg-paper p-3.5 flex flex-col overflow-hidden h-full">
+    <div className="bg-paper p-3.5 flex flex-col flex-1 w-full h-full overflow-hidden min-h-0">
       {/* TABS */}
-      <div className="flex border-b border-paper-3 -mx-3.5 px-3.5 overflow-x-auto scrollbar-hide shrink-0">
+      <div className="flex border-b border-paper-3 -mx-3.5 px-3.5 overflow-x-auto custom-scrollbar shrink-0">
         {tabs.map(tab => (
           <div 
             key={tab}
@@ -29,7 +29,7 @@ export default function CenterColumn() {
         ))}
       </div>
 
-      <div className="pt-3 flex-1 relative overflow-y-auto scrollbar-hide">
+      <div className="pt-3 flex-1 relative overflow-y-auto custom-scrollbar min-h-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab + activeWorld}

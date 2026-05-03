@@ -71,7 +71,7 @@ export default function RightColumn() {
   };
 
   return (
-    <div className="bg-paper flex flex-col p-0 h-full">
+    <div className="bg-paper flex flex-col flex-1 w-full p-0 h-full min-h-0 overflow-hidden">
       {/* AI box */}
       <div className="px-3.5 py-3 pb-0">
         <div className="bg-ink text-paper px-[13px] py-[11px] rounded-[6px] mb-[1px] relative overflow-hidden">
@@ -105,7 +105,7 @@ export default function RightColumn() {
       </div>
 
       {/* Vision milestones */}
-      <div className="px-3.5 py-3 border-t border-paper-3 flex-1 overflow-y-auto scrollbar-hide">
+      <div className="px-3.5 py-3 border-t border-paper-3 flex-1 overflow-y-auto custom-scrollbar min-h-0">
         <div className="flex justify-between items-center mb-2">
           <div className="text-[13px] tracking-[0.14em] uppercase text-ink-3">Vision Milestones</div>
           <div className="text-[10px] font-mono text-gold">
@@ -175,7 +175,7 @@ export default function RightColumn() {
           </div>
         </div>
 
-        <div className="flex gap-[6px] mt-2">
+        <div className="flex gap-[6px] mt-2 shrink-0">
           <button 
             onClick={handleLog}
             disabled={!captureInput.trim()}
@@ -196,7 +196,7 @@ export default function RightColumn() {
           </button>
         </div>
 
-        <div className="mt-4 space-y-2">
+        <div className="mt-4 space-y-2 overflow-y-auto custom-scrollbar max-h-[250px]">
           <AnimatePresence initial={false}>
             {logs.map((log, i) => (
               <motion.div 
